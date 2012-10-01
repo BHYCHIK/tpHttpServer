@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -38,8 +39,10 @@ public final class HTTPWorker implements Runnable
 		int emptyStr;
 		StringBuilder requestBuilder;
 		String nextLine;
+		String reply;
+		OutputStream outputStream;
 		
-		while(true)
+		while(!Thread.interrupted())
 		{
 			socket = serverSocket.accept();
 			inputStream = socket.getInputStream();
@@ -52,9 +55,12 @@ public final class HTTPWorker implements Runnable
 				{
 					break;
 				}
-				requestBuilder.append(nextLine+"\n");
+				requestBuilder.append(nextLine+"\r\n");
 			}
-			HTTPParser.getReply(requestBuilder.toString());
+			reply = HTTPParser.getReply(requestBuilder.toString());
+			outputStream = socket.getOutputStream();
+			outputStream.write(reply.getBytes());
+			outputStream.close();
 			bufferedReader.close();
 			inputStream.close();
 			socket.close();
