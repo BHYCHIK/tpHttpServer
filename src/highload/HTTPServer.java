@@ -8,7 +8,7 @@ import java.net.UnknownHostException;
 public final class HTTPServer implements Runnable 
 {
 	private final int defaultNumberOfWorkers = 5;
-	private final int defaultListeningPort = 8080;
+	private final int defaultListeningPort = 8081;
 	private final String defaultAddress = "0.0.0.0";
 	private final int defaultBacklog = 255;
 	
@@ -34,6 +34,8 @@ public final class HTTPServer implements Runnable
 			workersThreads[workerID] = new Thread(workers[workerID]);
 			workersThreads[workerID].run();
 		}
+		
+		while(true);
 		
 	}
 
