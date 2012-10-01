@@ -17,15 +17,26 @@ public final class HTTPServer implements Runnable
 	private int listeningPort;
 	private int backLog;
 	
-	private ServerSocket socket;
+	private ServerSocket serverSocket;
+	
+	private HTTPWorker[] workers;
+	private Thread[] workersThreads;
 
 	@Override
-	public void run() 
+	public void run()  
 	{
-		// TODO Auto-generated method stub
+		workers = new HTTPWorker[numberOfWorkers];
+		workersThreads = new Thread[numberOfWorkers];
+		
+		for(int workerID = 0; workerID < numberOfWorkers; ++workerID)
+		{
+			workers[workerID] = new HTTPWorker(serverSocket);
+			workersThreads[workerID] = new Thread(workers[workerID]);
+			workersThreads[workerID].run();
+		}
 		
 	}
-	
+
 	public HTTPServer() throws UnknownHostException, IOException
 	{
 		numberOfWorkers = defaultNumberOfWorkers;
@@ -33,7 +44,7 @@ public final class HTTPServer implements Runnable
 		listeningPort = defaultListeningPort;
 		backLog = defaultBacklog;
 		
-		socket = new ServerSocket(listeningPort, 0, InetAddress.getByName(defaultAddress));
+		serverSocket = new ServerSocket(listeningPort, 0, InetAddress.getByName(defaultAddress));
 	}	
 	
 }
