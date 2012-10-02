@@ -3,12 +3,12 @@ package highload;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Date;
 
 public final class HTTPParser 
 {
 	private String documentRoot = "C:\\highload\\www\\";
+	private String defaultIndex = "/index.html";
 	
 	private String getContentType(String filename)
 	{
@@ -39,6 +39,10 @@ public final class HTTPParser
 		{
 			return "Content-Type: image/png\r\n";
 		}
+		if(extension.toLowerCase().equals("bmp"))
+		{
+			return "Content-Type: image/x-bmp\r\n";
+		}
 		if(extension.toLowerCase().equals("jpg") || extension.toLowerCase().equals("jpeg"))
 		{
 			return "Content-Type: image/jpeg\r\n";
@@ -52,9 +56,12 @@ public final class HTTPParser
 		File file = new File(documentRoot+fileName);
 		if(!file.exists())
 		{
-			return("HTTP/1.1 404 Not found");
+			return("HTTP/1.1 404 Not found\r\n\r\n");
 		}
 		StringBuilder reply = new StringBuilder("HTTP/1.1 200 OK\r\n");
+		reply.append("Date: ");
+		reply.append((new Date()).toGMTString());
+		reply.append("\r\nServer: bhychikHTTP\r\n");
 		reply.append(getContentType(fileName));
 		reply.append("Content-Length: ");
 		reply.append(file.length());
@@ -64,6 +71,10 @@ public final class HTTPParser
 	
 	private String getFileName(String string) 
 	{
+		if (string.endsWith("/"))
+		{
+			string += defaultIndex;
+		}
 		int paramsIndex = string.indexOf("?");
 		if (paramsIndex > 0)
 		{
@@ -90,7 +101,7 @@ public final class HTTPParser
 	
 	public byte[] getReply(String request)
 	{
-		
+		System.out.print(request);
 		String[] requestLines = request.split("\r\n"); 
 		int linesPerRequest = requestLines.length;
 		StringBuilder builder = new StringBuilder();
@@ -106,7 +117,10 @@ public final class HTTPParser
 	{
 		try
 		{
-			String fname = ((string.split("\r\n"))[0].split(" "))[1];
+			String[] requestLines = string.split("\r\n");
+			String firstLine = requestLines[0];
+			String[] firstLineParts = firstLine.split(" ");
+			String fname = firstLineParts[1]; 
 			File file = new File(documentRoot + getFileName(fname));
 			if(!file.exists())
 				return new byte[0];

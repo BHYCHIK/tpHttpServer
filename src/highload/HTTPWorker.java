@@ -10,6 +10,7 @@ import java.net.Socket;
 
 public final class HTTPWorker implements Runnable 
 {
+	private final int maxIters = 100;
 	
 	private ServerSocket serverSocket;
 	private HTTPParser parser;
@@ -39,33 +40,48 @@ public final class HTTPWorker implements Runnable
 		InputStream inputStream;
 		BufferedReader bufferedReader;
 		StringBuilder requestBuilder;
-		String nextLine;
 		byte[] reply;
 		OutputStream outputStream;
+		int iters;
 		
-		while(!Thread.interrupted())
+		while(true)
 		{
 			socket = serverSocket.accept();
 			inputStream = socket.getInputStream();
 			bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
 			requestBuilder = new StringBuilder("");
-			while(true)
+			char[] buf = new char[1500];
+			try
 			{
-				nextLine = bufferedReader.readLine();
-				if(nextLine == null || nextLine.equals(""))
+				iters = 0;
+				while(requestBuilder.indexOf("\r\n\r\n") == -1)
 				{
-					break;
+					
+					bufferedReader.read(buf);
+					requestBuilder.append(new String(buf));
+					if(iters == maxIters)
+					{
+						throw (new IOException());
+					}
+					++iters;
 				}
-				requestBuilder.append(nextLine+"\r\n");
+				String request = requestBuilder.toString();
+				reply = parser.getReply(request);
+				outputStream = socket.getOutputStream();
+				outputStream.write(reply);
+				byte[] content = parser.getContent(request);
+				if(content.length > 0)
+				{
+					outputStream.write(content);
+				}
+				outputStream.close();		
 			}
-			reply = parser.getReply(requestBuilder.toString());
-			outputStream = socket.getOutputStream();
-			outputStream.write(reply);
-			outputStream.write(parser.getContent(requestBuilder.toString()));
-			outputStream.close();
-			bufferedReader.close();
-			inputStream.close();
-			socket.close();
+			finally
+			{
+				bufferedReader.close();
+				inputStream.close();
+				socket.close();
+			}
 		}
 	}
 }
