@@ -58,9 +58,10 @@ public final class HTTPWorker implements Runnable
 				}
 				requestBuilder.append(nextLine+"\r\n");
 			}
-			reply = HTTPParser.getReply(requestBuilder.toString());
+			reply = parser.getReply(requestBuilder.toString());
 			outputStream = socket.getOutputStream();
 			outputStream.write(reply);
+			outputStream.write(parser.getContent(requestBuilder.toString()));
 			outputStream.close();
 			bufferedReader.close();
 			inputStream.close();

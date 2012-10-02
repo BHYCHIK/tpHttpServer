@@ -5,10 +5,12 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 
+import org.eclipse.jetty.http.HttpParser;
+
 public final class HTTPServer implements Runnable 
 {
 	private final int defaultNumberOfWorkers = 5;
-	private final int defaultListeningPort = 18081;
+	private final int defaultListeningPort = 8081;
 	private final String defaultAddress = "0.0.0.0";
 	private final int defaultBacklog = 255;
 	private final int defaultTimeoutToAccept = 0;
@@ -23,6 +25,7 @@ public final class HTTPServer implements Runnable
 	
 	private HTTPWorker[] workers;
 	private Thread[] workersThreads;
+	private HTTPParser parser;
 
 	@Override
 	public void run()  
@@ -32,7 +35,7 @@ public final class HTTPServer implements Runnable
 		
 		for(int workerID = 0; workerID < numberOfWorkers; ++workerID)
 		{
-			workers[workerID] = new HTTPWorker(serverSocket);
+			workers[workerID] = new HTTPWorker(serverSocket, parser);
 			workersThreads[workerID] = new Thread(workers[workerID]);
 			workersThreads[workerID].run();
 		}
@@ -51,6 +54,8 @@ public final class HTTPServer implements Runnable
 		
 		serverSocket = new ServerSocket(listeningPort, 0, InetAddress.getByName(defaultAddress));
 		serverSocket.setSoTimeout(timeoutToAccept);
+		
+		parser = new HTTPParser();
 	}	
 	
 }
