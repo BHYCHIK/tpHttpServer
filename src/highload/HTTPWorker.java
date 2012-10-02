@@ -12,10 +12,12 @@ public final class HTTPWorker implements Runnable
 {
 	
 	private ServerSocket serverSocket;
+	private HTTPParser parser;
 	
-	public HTTPWorker(ServerSocket serverSocket)
+	public HTTPWorker(ServerSocket serverSocket, HTTPParser parser)
 	{
 		this.serverSocket = serverSocket;
+		this.parser = parser;
 	}
 	
 	@Override
@@ -36,10 +38,9 @@ public final class HTTPWorker implements Runnable
 		Socket socket;
 		InputStream inputStream;
 		BufferedReader bufferedReader;
-		int emptyStr;
 		StringBuilder requestBuilder;
 		String nextLine;
-		String reply;
+		byte[] reply;
 		OutputStream outputStream;
 		
 		while(!Thread.interrupted())
@@ -59,7 +60,7 @@ public final class HTTPWorker implements Runnable
 			}
 			reply = HTTPParser.getReply(requestBuilder.toString());
 			outputStream = socket.getOutputStream();
-			outputStream.write(reply.getBytes());
+			outputStream.write(reply);
 			outputStream.close();
 			bufferedReader.close();
 			inputStream.close();

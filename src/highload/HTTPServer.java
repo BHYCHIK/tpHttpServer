@@ -8,14 +8,16 @@ import java.net.UnknownHostException;
 public final class HTTPServer implements Runnable 
 {
 	private final int defaultNumberOfWorkers = 5;
-	private final int defaultListeningPort = 27016;
+	private final int defaultListeningPort = 18081;
 	private final String defaultAddress = "0.0.0.0";
 	private final int defaultBacklog = 255;
+	private final int defaultTimeoutToAccept = 0;
 	
 	private int numberOfWorkers;
 	private String address;
 	private int listeningPort;
 	private int backLog;
+	private int timeoutToAccept;
 	
 	private ServerSocket serverSocket;
 	
@@ -45,8 +47,10 @@ public final class HTTPServer implements Runnable
 		address = defaultAddress;
 		listeningPort = defaultListeningPort;
 		backLog = defaultBacklog;
+		timeoutToAccept = defaultTimeoutToAccept;
 		
 		serverSocket = new ServerSocket(listeningPort, 0, InetAddress.getByName(defaultAddress));
+		serverSocket.setSoTimeout(timeoutToAccept);
 	}	
 	
 }
