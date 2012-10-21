@@ -3,51 +3,31 @@ package highload;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Date;
+import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
+
 
 public final class HTTPParser 
 {
-	private String documentRoot = "C:\\highload\\www\\";
+	private String documentRoot = "C:\\www";
 	private String defaultIndex = "/index.html";
 	
 	private String getContentType(String filename)
 	{
-		int pointIndex = filename.indexOf(".");
-		int paramsIndex = filename.indexOf("?");
-		String extension;
-		if(pointIndex + 1 <= paramsIndex - 1)
-		{
-			extension = filename.substring(pointIndex + 1, paramsIndex - 1);
-		}
-		else
-		{
-			extension = filename.substring(pointIndex + 1);
-		}
-		if(extension.toLowerCase().equals("html") || extension.toLowerCase().equals("htm"))
-		{
-			return "Content-Type: text/html; charset=windows1251\r\n";
-		}
-		if(extension.toLowerCase().equals("js"))
-		{
-			return "Content-Type: text/javascript; charset=windows1251\r\n";
-		}
-		if(extension.toLowerCase().equals("gif"))
-		{
-			return "Content-Type: image/gif\r\n";
-		}
-		if(extension.toLowerCase().equals("png"))
-		{
-			return "Content-Type: image/png\r\n";
-		}
-		if(extension.toLowerCase().equals("bmp"))
-		{
-			return "Content-Type: image/x-bmp\r\n";
-		}
-		if(extension.toLowerCase().equals("jpg") || extension.toLowerCase().equals("jpeg"))
-		{
-			return "Content-Type: image/jpeg\r\n";
-		}
-		return "";
+		String fname = getFileName(filename);
+		return "Content-Type: "+URLConnection.guessContentTypeFromName(fname)+"\r\n";		
+	}
+	
+	public String getServerTime() 
+	{
+	    Calendar calendar = Calendar.getInstance();
+	    SimpleDateFormat dateFormat = new SimpleDateFormat(
+	        "EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+	    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+	    return dateFormat.format(calendar.getTime());
 	}
 	
 	private String proccessMainPart(String[] request)
@@ -60,7 +40,7 @@ public final class HTTPParser
 		}
 		StringBuilder reply = new StringBuilder("HTTP/1.1 200 OK\r\n");
 		reply.append("Date: ");
-		reply.append((new Date()).toGMTString());
+		reply.append(getServerTime());
 		reply.append("\r\nServer: bhychikHTTP\r\n");
 		reply.append(getContentType(fileName));
 		reply.append("Content-Length: ");
